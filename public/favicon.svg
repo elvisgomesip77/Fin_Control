@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#1E293B"/>
+  <path d="M64 80h128c13.3 0 24 10.7 24 24v80c0 13.3-10.7 24-24 24H64c-13.3 0-24-10.7-24-24v-80c0-13.3 10.7-24 24-24z" fill="#10B981"/>
+  <circle cx="180" cy="144" r="16" fill="#1E293B" opacity="0.3"/>
+  <rect x="56" y="64" width="112" height="12" rx="6" fill="#10B981" opacity="0.6"/>
+  <text x="128" y="165" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#1E293B" text-anchor="middle">FF</text>
+</svg>

@@ -1,0 +1,131 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/finfam_pwa/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// ─── Auth ───
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  householdId   String?
+  household     Household? @relation(fields: [householdId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+// ─── App ───
+model Household {
+  id             String          @id @default(cuid())
+  name           String
+  baseCurrency   String          @default("EUR")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  users          User[]
+  members        Member[]
+  paymentMethods PaymentMethod[]
+  transactions   Transaction[]
+}
+
+model Member {
+  id          String        @id @default(cuid())
+  householdId String
+  name        String
+  createdAt   DateTime      @default(now())
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  @@index([householdId])
+}
+
+model PaymentMethod {
+  id          String        @id @default(cuid())
+  householdId String
+  name        String
+  type        String        // credit, debit, mbway, pix, cash
+  cardLimit   Float?
+  closingDay  Int?
+  dueDay      Int?
+  createdAt   DateTime      @default(now())
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  @@index([householdId])
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  name        String
+  iconName    String
+  type        String        @default("expense") // income | expense
+  isDefault   Boolean       @default(false)
+  householdId String?
+  createdAt   DateTime      @default(now())
+  transactions Transaction[]
+  @@index([householdId])
+}
+
+model Transaction {
+  id              String        @id @default(cuid())
+  householdId     String
+  memberId        String?
+  paymentMethodId String?
+  categoryId      String?
+  description     String?
+  amount          Float
+  currency        String        @default("EUR")
+  type            String        @default("expense") // income | expense
+  date            DateTime      @default(now())
+  installments    Int           @default(1)
+  status          String        @default("confirmed") // confirmed | pending
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  household       Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  member          Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([householdId, date])
+  @@index([householdId, type])
+  @@index([categoryId])
+}

@@ -1,0 +1,15 @@
+import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const headersList = await headers();
+  const host = headersList.get('x-forwarded-host') ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+  const baseUrl = host.startsWith('http') ? host : `https://${host}`;
+
+  return [
+    { url: baseUrl, lastModified: new Date() },
+    { url: `${baseUrl}/dashboard`, lastModified: new Date() },
+    { url: `${baseUrl}/transactions`, lastModified: new Date() },
+    { url: `${baseUrl}/settings`, lastModified: new Date() },
+  ];
+}
